@@ -2,6 +2,68 @@
 
 Rust's `.unwrap_or_*()` methods are limited for complex cases.
 
+## Solution
+- https://play.rust-lang.org/?gist=061bd0c2a304a2329d1f87265b0e305e&version=stable&mode=debug
+- https://play.rust-lang.org/?gist=57ab8b8d04e753933a0b5746b1b2c67b&version=stable&mode=debug
+
+### Return Option
+```rust
+use std::error::Error;
+
+fn main() {
+    // Return type is `Ok(12)`.
+    let mut res = cache_get1().or_else(|| db_get().ok());
+    println!("1. {:?}", res);
+    println!("1. {:?}", res.unwrap());
+
+    // Return type is `Err(Ok(13))`.
+    res = cache_get2().or_else(|| db_get().ok());
+    println!("2. {:?}", res);
+    println!("2. {:?}", res.unwrap());
+}
+
+fn cache_get1() -> Option<usize> {
+    Some(12)
+}
+
+fn cache_get2() -> Option<usize> {
+    None
+}
+
+fn db_get() -> Result<usize, Box<Error>> {
+    Ok(13)
+}
+```
+
+### Return Result
+```rust
+use std::error::Error;
+
+fn main() {
+    // Return type is `Ok(12)`.
+    let mut res = cache_get1().ok_or_else(|| db_get());
+    println!("1. {:?}", res);
+    println!("1. {:?}", res.unwrap());
+
+    // Return type is `Err(Ok(13))`.
+    res = cache_get2().ok_or_else(|| db_get());
+    println!("2. {:?}", res);
+    println!("2. {:?}", res.unwrap());
+}
+
+fn cache_get1() -> Option<usize> {
+    Some(12)
+}
+
+fn cache_get2() -> Option<usize> {
+    None
+}
+
+fn db_get() -> Result<usize, Box<Error>> {
+    Ok(13)
+}
+```
+
 ## Details
 The use of `match` and `Option` is rather common in Rust. Often times you want
 to check whether a value is `None`, and then perform an action to create a
